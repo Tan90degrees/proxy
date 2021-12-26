@@ -8,10 +8,11 @@ import (
 	"proxy/myerror"
 )
 
-func ProxyServer() {
+func ProxyServer(servPort string) {
 	handler := func(cRespW http.ResponseWriter, cReq *http.Request) {
+		fmt.Println(cReq.URL.String())
 		// buf := new(bytes.Buffer)
-		buf := make([]byte, 16384)
+		buf := make([]byte, 32*1024)
 		servClient := new(http.Client)
 		servReq, err := http.NewRequest(cReq.Method, cReq.URL.String(), cReq.Body)
 		myerror.CheckError(err)
@@ -28,16 +29,18 @@ func ProxyServer() {
 		for {
 			// num, err := servResp.Body.Read(buf)
 			// cRespW.Write(buf)
-			_, err := io.ReadFull(servResp.Body, buf)
-			cRespW.Write(buf)
-			if err != nil {
+			num, err := io.ReadFull(servResp.Body, buf)
+			if num == 0 && err != nil {
+				break
+			}
+			num, err = cRespW.Write(buf)
+			if num == 0 && err != nil {
 				break
 			}
 		}
 		defer servResp.Body.Close()
 		// buf.Reset()
-		fmt.Println(cReq.URL.String())
 	}
 	http.HandleFunc("/", handler)
-	log.Fatal(http.ListenAndServe("127.0.0.1:10086", nil))
+	log.Fatal(http.ListenAndServe("127.0.0.1:"+servPort, nil))
 }

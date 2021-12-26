@@ -11,9 +11,9 @@ import (
 	"time"
 )
 
-func TunnelServer() {
+func TunnelServer(servPort string) {
 	var twg sync.WaitGroup
-	listener, err := net.Listen("tcp", ":10086")
+	listener, err := net.Listen("tcp", ":"+servPort)
 	myerror.CheckErrorExit(err)
 	defer listener.Close()
 
@@ -49,22 +49,22 @@ func TunnelServer() {
 			iwg.Add(1)
 			go func() {
 				// num, _ := io.CopyBuffer(servConn, conn, buf)
-				num, _ := io.Copy(servConn, clientConn)
-				if num == 0 {
+				num, err := io.Copy(servConn, clientConn)
+				if num == 0 && err != nil {
 					iwg.Done()
 					return
 				}
 			}()
 
-			iwg.Add(1)
-			go func() {
-				num, _ := io.Copy(clientConn, servConn)
-				if num == 0 {
-					iwg.Done()
-					return
-				}
-			}()
-			iwg.Wait()
+			// iwg.Add(1)
+			// go func() {
+			io.Copy(clientConn, servConn)
+			// 		if num == 0 && err != nil {
+			// 			iwg.Done()
+			// 			return
+			// 		}
+			// 	}()
+			// 	iwg.Wait()
 		}
 
 		twg.Done()
