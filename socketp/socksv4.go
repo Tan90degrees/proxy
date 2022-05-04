@@ -15,7 +15,6 @@ const (
 )
 
 const NETWORK_ERR = "uknown network error"
-const MASK_IP_4A uint8 = 15 // 00001111
 
 func rspV4(conn net.Conn, msg *[]byte) error {
 	num, err := conn.Write((*msg)[:8])
@@ -88,14 +87,6 @@ func handleV4(conn net.Conn, msg *[]byte) {
 		io.Copy(conn, connServ)
 		conn.Close()
 	} else if (*msg)[1] == 2 { // Bind
-		// (*msg)[0] = 0
-		// ln, err := net.ListenTCP("tcp", &net.TCPAddr{IP: (*msg)[4:8], Port: (int((*msg)[2]) << 8) + int(((*msg)[3]))})
-		// if err != nil {
-		// 	log.Fatal(err)
-		// 	(*msg)[1] = REQ_REJ
-		// 	rspV4(conn, msg)
-		// 	return
-		// }
 		return
 	}
 }
